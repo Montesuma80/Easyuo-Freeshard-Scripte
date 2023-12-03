@@ -1,0 +1,180 @@
+;==================================================
+; Script Name: Montesuma80 Logs2Boards
+; Author: EnCode (edited by: Montesuma80)
+; Version: 1.0.0
+; Client Tested with: 7.0.88.1
+; EUO version tested with: 1.6.0.336
+; Shard OSI / FS: FS
+; Revision Date: 12-03-23
+; Public Release: 12-03-23
+; Purpose: Converts logs to boards in a container.
+;=========Updates==================================
+;v1.0 - Main Construction.
+;==================================================
+initevents
+setup:
+  gosub init
+	display ok Target your container with the logs.
+	set #targCurs 1
+	setupSupplyBag:
+		if #targCurs = 1
+			goto setupSupplyBag
+		set %supplyBag #lTargetID
+	set #lobjectid %supplyBag
+	event macro 17 0
+	wait 1s
+	gosub cleanBP
+grabLogs:
+  set %lastWood %curWood
+	finditem ZLK C_ , %supplyBag
+	if #findkind = -1
+	{
+		display ok Done, halting.
+		halt
+  }
+  set %grabAmt ( 550 - #weight ) / 2
+	exevent drag #findid %grabAmt
+  exevent dropc #backpackid
+  wait 1s
+  set %curWood #findcol
+convert:
+  wait 7
+	findItem KGG_EGG_AGG_IGG_BIG_ZHG_WFG_YFG_XFG_CGG C_ , #backpackid
+	if #findkind = -1
+	{
+		findItem KGG_EGG_AGG_IGG_BIG_ZHG_WFG_YFG_XFG_CGG C_ , %supplyBag
+		if #findkind = -1
+		{
+			display ok Cannot find carpentry tools. The script is halting.
+			halt
+		}
+		exevent drag #findid
+    exevent dropc #backpackid
+    wait 2s
+	}
+ set #lobjectid #findid
+	event macro 17 0
+	event macro 17 0
+  gosub gumpWait
+	gosub calcClicks
+	if %curWood <> %lastWood
+	{
+	click %woodtypex %woodtypey
+	wait 5
+if %curWood = %normalCol
+       click %woodx %woody
+    if %curWood = %pineCol
+       click %woodx %piney
+    if %curWood = %ashCol
+       click %woodx %ashy
+    if %curWood = %mohoganyCol
+       click %woodx %mohoganyy
+    if %curWood = %yewCol
+       click %woodx %yewy
+    if %curWood = %oakCol
+       click %woodx %oaky
+    if %curWood = %zircoteCol
+       click %woodx %zircotey
+    if %curWood = %ebonyCol
+       click %woodx %ebonyy
+    if %curWood = %bambooCol
+       click %woodx %bambooy
+    if %curWood = %purplehCol
+       click %woodx %purplehy
+    if %curWood = %redwoodCol
+    {
+       click %nexttypex %nexttypey
+       wait 5
+       click %woodx %redwoody
+    }
+    if %curWood = %petrifiedCol
+    {
+       click %nexttypex %nexttypey
+       wait 5
+       click %woodx %petrifiedy
+    }
+  gosub gumpWait
+	click %othermenux %othermenuy
+  gosub gumpWait
+  }
+	click %boardmenux %boardmenuy
+  gosub gumpWait
+	set %curTime #scnt
+	click %exitmenux %exitmenuy
+stashBoards:
+  if %curTime < ( #scnt - 5 )
+  {
+     event sysmessage Error correcting.
+     goto grabLogs
+  }
+	finditem TLK C_ , #backpackid
+	if #findkind = -1
+		goto stashBoards
+	exevent drag #findid #findstack
+  exevent dropc %supplyBag
+  wait 1s
+	goto grabLogs
+
+sub init
+    set %normalCol 0
+    set %pineCol 1262
+    set %ashCol 961
+    set %mohoganyCol 355
+    set %yewCol 1281
+    set %oakCol 488
+    set %zircoteCol 1271
+    set %ebonyCol 43
+    set %bambooCol 1152
+    set %purplehCol 114
+    set %redwoodCol 37
+    set %petrifiedCol 1153
+return
+
+sub cleanBP
+    _cleanBP:
+    finditem ZLK C_ , #backpackid
+    if #findkind = -1
+       return
+    exevent drag #findid #findstack
+    exevent dropc %supplyBag
+    wait 15
+    goto _cleanBP
+return
+
+sub gumpWait
+    set %curTime #scnt
+    _gumpWait:
+    if %curTime < ( #scnt - 5 )
+       return
+    if worn in #journal || worn in #sysmsg
+       return
+    if #CONTSIZE <> 530_437
+       goto _gumpWait
+    wait 5
+return
+
+sub calcClicks
+    set %woodtypex #contposx + 30
+    set %woodtypey #contposy + 375
+    set %nexttypex #contposx + 500
+    set %nexttypey #contposy + 270
+    set %woodx #contposx + 235
+    set %woody #contposy + 70
+    set %piney #contposy + 90
+    set %ashy #contposy + 110
+    set %mohoganyy #contposy + 130
+    set %yewy #contposy + 150
+    set %oaky #contposy + 170
+    set %zircotey #contposy + 190
+    set %ebonyy #contposy + 210
+    set %bambooy #contposy + 230
+    set %purplehy #contposy + 250
+    set %redwoody #contposy + 70
+    set %petrifiedy #contposy + 90
+    set %othermenux #contposx + 28
+    set %othermenuy #contposy + 90
+    set %boardmenux #contposx + 233
+    set %boardmenuy #contposy + 70
+    set %exitx #contposx + 30
+    set %exity #contposy + 413
+return
